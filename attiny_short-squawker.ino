@@ -28,7 +28,7 @@
 
 // This must be a power of 2
 #define ADC_AVERAGE_GAIN 16
-#define MAX_ACTIVE_INPUT 1023 * ADC_AVERAGE_GAIN
+#define MAX_ACTIVE_INPUT (1023 * ADC_AVERAGE_GAIN - 100)
 
 
 // *_PERIOD should be a power of 2
