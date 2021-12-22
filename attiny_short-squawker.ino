@@ -219,7 +219,13 @@ void SM_input()
       break;
 
     case timeout:
-      SM_input_state = button_up;
+      if (button) {
+        SM_input_state = button_up;
+      } else {
+        // still holding button
+        // so avoid triggering toggle_alternate_tone()
+        SM_input_state = timeout;
+      }
       break;
 
     default:
