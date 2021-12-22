@@ -1,0 +1,13 @@
+
+2021-12-21 17:36:43
+----------------------------------------
+adc_setup() wasn't getting compiled to the output,
+so therefore not called.
+
+adding analogRead() would get compiled, so that's why it was working OK
+
+LTO option has an effect maybe
+
+set back to original and problem also is no longer present
+
+
