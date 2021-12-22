@@ -4,7 +4,7 @@
  * Dan White <dan.white@valpo.edu>
  *
  * Find small resistances.
- * 
+ *
  */
 
 #include <stdint.h>
@@ -43,7 +43,32 @@
 
 
 
+/*
+ * Constants for peripheral config
+ */
+// Timer0
+const uint8_t TIMER0_PRESCALER_DIV64 = 0x03;
+const uint8_t TIMER0_PRESCALER_DIV8 = 0x02;
+const uint8_t TIMER0_PRESCALER_DIV1 = 0x01;
 
+// ADC
+const uint8_t ADC_REF_INTERNAL_1V1 = (0 << REFS2) +
+                                     (1 << REFS1) +
+                                     (0 << REFS0);
+const uint8_t ADC_REF_VCC = (0 << REFS2) +
+                            (0 << REFS1) +
+                            (0 << REFS0);
+const uint8_t ADC_MUX_44_x1 = 0x04;
+const uint8_t ADC_MUX_44_x20 = 0x05;
+const uint8_t ADC_MUX_43_x1 = 0x06;
+const uint8_t ADC_MUX_43_x20 = 0x07;
+
+
+
+
+/*
+ * Global variables
+ */
 volatile uint16_t average = 0;
 volatile uint16_t dco_phase = 0;
 volatile uint16_t phase_increment = 2000;
@@ -54,12 +79,12 @@ volatile uint8_t alternate_tone = 0;
 
 /*
  * xdelay
- * 
+ *
  * Busy loop delay.
- * 
+ *
  *  input:
  *    uint16_t count -- loop count
- *    
+ *
  *  output:
  *    none
  */
@@ -77,22 +102,18 @@ void xdelay(uint16_t count)
 
 void timer_setup()
 {
-  const uint8_t TIMER0_PRESCALER_DIV64 = 0x03;
-  const uint8_t TIMER0_PRESCALER_DIV8 = 0x02;
-  const uint8_t TIMER0_PRESCALER_DIV1 = 0x01;
-
   /*
    * Timer0 setup
    */
   GTCCR = 0x00; //default
   TCCR0A = (0x2 << WGM00);
-  
+
   TCCR0B = TIMER0_PRESCALER_DIV8;
 
   OCR0A = TIMER0_MAX;
 
   // interrupt on OCR0A match
-  
+
   // enable overflow interrupt
   TIMSK = 0x00;  // default
   TIMSK |= (1 << OCIE0A);
@@ -100,48 +121,39 @@ void timer_setup()
   /*
    * Timer1 setup
    */
-   TCCR1 = (1 << CTC1)  // clear timer on OCR1C match
-           + (1 << PWM1A)   // PWM mode for OCR1A
-           + (0b10 << COM1A0)  // both OC1A and OC1Ainv active
-           + (0x01);  // CS1[3:0] clock select
+  TCCR1 = (1 << CTC1)  // clear timer on OCR1C match
+         + (1 << PWM1A)   // PWM mode for OCR1A
+         + (0b10 << COM1A0)  // both OC1A and OC1Ainv active
+         + (0x01);  // CS1[3:0] clock select
 
-    // longest PWM period
-    OCR1C = 0xff;
+  // longest PWM period
+  OCR1C = 0xff;
 
-   /* 12.2.1 Initialization for Async Mode:
-      * enable PLL
-      * wait 100us
-      * poll PLOCK for 1
-      * set PCKE */
-   PLLCSR |= (1 << PLLE);
-   _delay_us(100);
-   while ( !(PLLCSR & PLOCK) );
-   PLLCSR |= (1 << PCKE);
+  /* 12.2.1 Initialization for Async Mode:
+   * enable PLL
+   * wait 100us
+   * poll PLOCK for 1
+   * set PCKE */
+  PLLCSR |= (1 << PLLE);
+  //_delay_us(100);
+  while ((PLLCSR & PLOCK) != 0) {
+    _NOP();
+  }
+  PLLCSR |= (1 << PCKE);
 }
 
 
-void adc_setup() {
-  const uint8_t ADC_REF_INTERNAL_1V1 = (0 << REFS2) +
-                                       (1 << REFS1) +
-                                       (0 << REFS0);
-  const uint8_t ADC_REF_VCC = (0 << REFS2) +
-                              (0 << REFS1) +
-                              (0 << REFS0);
-
-  const uint8_t ADC_MUX_44_x1 = 0x04;
-  const uint8_t ADC_MUX_44_x20 = 0x05;
-  const uint8_t ADC_MUX_43_x1 = 0x06;
-  const uint8_t ADC_MUX_43_x20 = 0x07;
-
-  ADMUX = ADC_REF_INTERNAL_1V1 + 
+void adc_setup()
+{
+  ADMUX = ADC_REF_INTERNAL_1V1 +
           (0 << ADLAR) +
           ADC_MUX_43_x20;
-          
+
   // div 64 from system clock
   // f_cpu 8 MHz / 64 => 125 kHz
   const uint8_t ADC_PRESCALER = 0x06;
 
-  ADCSRA = (1 << ADEN) + 
+  ADCSRA = (1 << ADEN) +
            (1 << ADSC) +
            (0 << ADATE) +
            (0 << ADIE) +
@@ -150,7 +162,7 @@ void adc_setup() {
   // trigger conversion on timer0 overflow
   ADCSRB = 0x04;
 
-  // disable digital port buffers on 
+  // disable digital port buffers on
   DIDR0 = (1 << ADC2D) | (1 << ADC3D);
 }
 
@@ -196,7 +208,7 @@ void SM_input()
   static unsigned int count = 0;
 
   uint8_t button = PINB & BUTTON_PIN;
-  
+
   // transitions
   switch (SM_input_state) {
     case button_up:
@@ -206,7 +218,7 @@ void SM_input()
         SM_input_state = button_down;
       }
       break;
-      
+
     case button_down:
       if (count > BUTTON_HOLD_TIMEOUT) {
         SM_input_state = timeout;
@@ -241,7 +253,7 @@ void SM_input()
         count = 0;
       }
       break;
-      
+
     case button_down:
       count++;
       break;
@@ -253,7 +265,7 @@ void SM_input()
 
     default:
       break;
-  } 
+  }
 }
 
 
@@ -371,11 +383,11 @@ ISR(ADC_vect)
 }
 */
 
-ISR(TIMER0_COMPA_vect) 
+ISR(TIMER0_COMPA_vect)
 {
   static uint16_t timer_count = 0;
 
-  uint16_t adc, avg;
+  uint16_t adc;
   uint16_t x;
 
 
@@ -424,8 +436,6 @@ ISR(TIMER0_COMPA_vect)
   if ((timer_count + INPUT_TICK_OFFSET) % INPUT_PERIOD == 0) {
     SM_input();
   }
-
-
 } // TIMER0_COMPA_vect
 
 
