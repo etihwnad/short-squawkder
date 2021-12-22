@@ -401,9 +401,12 @@ ISR(TIMER0_COMPA_vect)
   timer_count++;
 
 
-  // ADC
+  // ADC and output update
+  // TODO: is (now() - last_time > period) quicker?
   if ((timer_count + ADC_TICK_OFFSET) % ADC_PERIOD == 0) {
-    adc = analogRead(A2);
+    adc = ADCL;
+    adc += (ADCH << 8);
+    ADCSRA |= (1 << ADSC);
     average = adc_average(adc);
 
     // always update phase increment ASAP
