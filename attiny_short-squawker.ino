@@ -407,14 +407,14 @@ ISR(TIMER0_COMPA_vect)
     adc = ADCL;
     adc += (ADCH << 8);
     ADCSRA |= (1 << ADSC);
-    average = adc_average(adc);
 
     // always update phase increment ASAP
-    if (average >= MAX_ACTIVE_INPUT) {
-      // silent if over-range
+    if (adc >= 1020) {
+      // silent if sample is over-range
       phase_increment = 0;
     }
     else {
+      average = adc_average(adc);
       phase_increment = adc_to_phase_increment(average);
     }
 
