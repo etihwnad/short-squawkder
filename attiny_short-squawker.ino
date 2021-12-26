@@ -22,7 +22,13 @@
 #define BUTTON_HOLD_TIMEOUT 400
 
 
-#define TIMER0_MAX 200
+
+
+// 10 kHz sample rate when TIMER0_MAX = 99
+#define TIMER0_MAX 99
+#define SAMPLE_RATE (F_CPU / (8 * (1 + TIMER0_MAX)))
+
+
 #define PHASE_INC_MIN 1024
 
 
@@ -32,9 +38,9 @@
 
 
 // *_PERIOD should be a power of 2
-#define ADC_PERIOD 8
-#define INPUT_PERIOD 16
-#define ALTERNATE_PERIOD 2048
+#define ADC_PERIOD 16
+#define INPUT_PERIOD 32
+#define ALTERNATE_PERIOD 4096
 
 // offsets so there is only one major task
 // for any given timer tick % (_PERIOD)
@@ -291,7 +297,7 @@ uint16_t adc_to_phase_increment(uint16_t value)
   // TODO: document these constants
   // minimum frequency for ADC value of 0, offset
   // maximum frequency for largest ADC value, scale factor
-  return (32/ADC_AVERAGE_GAIN * value) + PHASE_INC_MIN;
+  return (16/ADC_AVERAGE_GAIN * value) + PHASE_INC_MIN;
 }
 
 
