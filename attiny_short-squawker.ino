@@ -352,9 +352,43 @@ const uint8_t sine_table[256] = {
 
 
 
-uint8_t wave_sine(uint8_t phase)
+int8_t wave_sine(uint8_t phase)
 {
-  return sine_table[phase];
+  return sine_table[phase] - 128;
+}
+
+
+
+
+uint8_t signal_synth(uint8_t phase)
+{
+  int16_t sig = 0;
+  uint16_t x;
+
+  // fundamental frequency
+  x = 1 * phase;
+  sig = wave_sine(x);
+
+  // 2nd harmonic
+  if (average < (1024 * ADC_AVERAGE_GAIN / 2)) {
+    x = 2 * phase;
+    sig += wave_sine(x)/4;
+  }
+
+  // 3rd harmonic
+  if (average < (1024 * ADC_AVERAGE_GAIN / 3)) {
+    x = 3 * phase;
+    sig += wave_sine(x)/6;
+  }
+
+  // 4rd harmonic
+  if (average < (1024 * ADC_AVERAGE_GAIN / 4)) {
+    x = 4 * phase;
+    sig += wave_sine(x)/8;
+  }
+
+  sig = sig / 4;
+  return (sig + 128) & 0xff;
 }
 
 
@@ -392,15 +426,18 @@ ISR(ADC_vect)
 ISR(TIMER0_COMPA_vect)
 {
   static uint16_t timer_count = 0;
-
   uint16_t adc;
-  uint16_t x;
 
+  PORTB |= DEBUG_PIN;
 
   // timing-sensitive things first
   // output value
-  x = 0xff & (dco_phase >> 8);
-  OCR1A = wave_sawtooth(x);
+  OCR1A = signal_synth(dco_phase >> 8);
+
+  //x = 0xff & (dco_phase >> 8);
+  //OCR1A = wave_sine(x);
+  //OCR1A = wave_triangle(x);
+  //OCR1A = wave_sawtooth(x);
 
 
   // then everything else
@@ -428,10 +465,6 @@ ISR(TIMER0_COMPA_vect)
         && ((timer_count % ALTERNATE_PERIOD) < (ALTERNATE_PERIOD / 4))) {
       // alternate between reference and live values
       phase_increment = adc_to_phase_increment(zero_reference);
-      PORTB |= DEBUG_PIN;
-    }
-    else {
-      PORTB &= ~DEBUG_PIN;
     }
   } // ADC
 
@@ -445,6 +478,8 @@ ISR(TIMER0_COMPA_vect)
   if ((timer_count + INPUT_TICK_OFFSET) % INPUT_PERIOD == 0) {
     SM_input();
   }
+
+  PORTB &= ~DEBUG_PIN;
 } // TIMER0_COMPA_vect
 
 

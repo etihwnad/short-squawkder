@@ -12,7 +12,7 @@ ADC_AVERAGE_GAIN = 32
 TIMER0_DIV = 8
 TIMER0_CLK = SYSTEM_CLK / TIMER0_DIV
 
-TIMER0_MAX = 199
+TIMER0_MAX = 99
 TIMER0_INT_RATE = TIMER0_CLK / (TIMER0_MAX + 1)
 
 
@@ -44,6 +44,9 @@ fout_max = f_dco(ADC_AVERAGE_GAIN * 1023)
 fout_min = f_dco(1023)
 print(f'f max: {fout_max:6.1f}')
 print(f'f min: {fout_min:6.1f}')
+
+print()
+print(p_dco(1e3))
 
 
 
