@@ -1,0 +1,10 @@
+= Short Squawker
+Resistance to frequency device for tracing short-circuits or low resistance traces.
+
+
+Design document currently lives at:
+
+https://agnd.net/valpo/322/shortsquawker-1.html
+
+
+// vim: tw=0

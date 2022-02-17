@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
 
+# Interactive-ish script to play with and compute constants for the
+# ShortSquawker.
+
+
 try:
     # clear the IPython environment so we start clean each time
     from IPython import get_ipython
