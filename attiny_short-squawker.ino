@@ -153,7 +153,7 @@ void adc_setup()
 {
   ADMUX = ADC_REF_INTERNAL_1V1 +
           (0 << ADLAR) +
-          ADC_MUX_43_x20;
+          ADC_MUX_43_x1;
 
   // div 64 from system clock
   // f_cpu 8 MHz / 64 => 125 kHz
