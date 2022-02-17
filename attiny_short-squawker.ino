@@ -311,12 +311,20 @@ uint8_t wave_square(uint8_t phase)
 }
 
 
-uint8_t wave_triangle(uint8_t phase)
+int8_t wave_triangle(uint8_t phase)
 {
-  if (phase < 128) {
-    return 2*phase;
+  uint8_t x = (4 * phase) & 0xff;
+
+  if (phase > 63) {
+    return 127 - (phase - 64);
   } else {
-    return 256 - phase;
+    return (4 * phase - 128);
+  }
+
+  if (phase > 127) {
+    return (256 - x - 128);
+  } else {
+    return (x - 128);
   }
 }
 
