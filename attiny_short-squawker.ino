@@ -379,23 +379,39 @@ uint8_t signal_synth(uint8_t phase)
 
   // 2nd harmonic
   if (average < (1024 * ADC_AVERAGE_GAIN / 2)) {
-    x = 2 * phase;
-    sig += wave_sine(x)/4;
+    x += phase;
+    sig += wave_sine(x & 0xff)/4;
   }
 
   // 3rd harmonic
   if (average < (1024 * ADC_AVERAGE_GAIN / 3)) {
-    x = 3 * phase;
-    sig += wave_sine(x)/6;
+    x += phase;
+    sig += wave_sine(x & 0xff)/9;
   }
 
   // 4rd harmonic
   if (average < (1024 * ADC_AVERAGE_GAIN / 4)) {
-    x = 4 * phase;
-    sig += wave_sine(x)/8;
+    x += phase;
+    sig += wave_sine(x & 0xff)/16;
+  }
+
+  // 4rd harmonic
+  if (average < (1024 * ADC_AVERAGE_GAIN / 5)) {
+    x += phase;
+    sig += wave_sine(x & 0xff)/20;
   }
 
   sig = sig / 4;
+
+
+  // sawtooth
+  if (average < (1024 * ADC_AVERAGE_GAIN / 10)) {
+    //sig = (255 - phase - 128)/4;
+    sig = wave_triangle(phase)/3;
+  }
+
+
+
   return (sig + 128) & 0xff;
 }
 
