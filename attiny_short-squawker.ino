@@ -157,6 +157,7 @@ void pin_setup()
   DDRB |= OUTPUT_PIN;
   DDRB |= DEBUG_PIN;
 
+  DDRB &= ~BUTTON_PIN;
   PORTB |= BUTTON_PIN;
 }
 
