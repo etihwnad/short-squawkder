@@ -10,7 +10,6 @@
 #include <stdint.h>
 
 // from AVR-GCC toolchain
-#include <util/delay.h>
 #include <avr/cpufunc.h>
 
 
@@ -83,27 +82,6 @@ volatile uint8_t alternate_tone = 0;
 
 
 
-/*
- * xdelay
- *
- * Busy loop delay.
- *
- *  input:
- *    uint16_t count -- loop count
- *
- *  output:
- *    none
- */
-void xdelay(uint16_t count)
-{
-  volatile uint8_t temp;
-
-  for (uint16_t i=0; i<count; i++) {
-    temp++;
-  }
-}
-
-
 
 
 void timer_setup()
@@ -141,7 +119,7 @@ void timer_setup()
    * poll PLOCK for 1
    * set PCKE */
   PLLCSR |= (1 << PLLE);
-  //_delay_us(100);
+
   while ((PLLCSR & PLOCK) != 0) {
     _NOP();
   }
@@ -273,13 +251,6 @@ void SM_input()
       break;
   }
 }
-
-
-
-
-
-
-
 
 
 
