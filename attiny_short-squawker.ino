@@ -10,6 +10,9 @@
 #include <stdint.h>
 
 // from AVR-GCC toolchain
+#include <avr/io.h>
+#include <avr/interrupt.h>
+
 #include <avr/cpufunc.h>
 
 
@@ -167,19 +170,22 @@ void pin_setup()
 void set_zero_reference(uint16_t value)
 {
   zero_reference = value;
-  debug_value(zero_reference);
+  //debug_value(zero_reference);
 }
 
 
 
 void toggle_alternate_tone(void)
 {
+  /*
   if (alternate_tone) {
     alternate_tone = 0;
   }
   else {
     alternate_tone = 1;
   }
+  */
+  alternate_tone ^= 1;
 }
 
 
@@ -424,10 +430,10 @@ ISR(TIMER0_COMPA_vect)
   static uint16_t timer_count = 0;
   uint16_t adc;
 
-  PORTB |= DEBUG_PIN;
+  PORTB |= DEBUG_PIN;  // measure ISR duration using this pin
 
   // timing-sensitive things first
-  // output value
+  // output sample value
   OCR1A = signal_synth(dco_phase >> 8);
 
   //x = 0xff & (dco_phase >> 8);
@@ -448,11 +454,17 @@ ISR(TIMER0_COMPA_vect)
     ADCSRA |= (1 << ADSC);
 
     // always update phase increment ASAP
-    if (adc >= 1020) {
+    if (adc >= 1020) {   // TODO: make this a config value
+      // Values close to this turns the sound on/off quickly and randomly,
+      // which sounds scratchy.  Maybe better if the *filtered* input value is
+      // used to detect open-circuit instead?
+
       // silent if sample is over-range
-      phase_increment = 0;
+      phase_increment = 0;  // output a static duty cycle
+      // TODO: Better is to just shut down the timer.
     }
     else {
+      // Low-pass filter the raw ADC value.
       average = adc_average(adc);
       phase_increment = adc_to_phase_increment(average);
     }
@@ -466,7 +478,7 @@ ISR(TIMER0_COMPA_vect)
 
 
   // DCO update
-  // (after possible ADC for quicker response)
+  // (after possible ADC for lower response latency)
   dco_phase += phase_increment;
 
 
@@ -475,7 +487,7 @@ ISR(TIMER0_COMPA_vect)
     SM_input();
   }
 
-  PORTB &= ~DEBUG_PIN;
+  PORTB &= ~DEBUG_PIN;  // pulse width is ISR duration
 } // TIMER0_COMPA_vect
 
 
