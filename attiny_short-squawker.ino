@@ -5,6 +5,11 @@
  *
  * Find small resistances.
  *
+ * Configuration:
+ * ATTinyCore board package
+ *  - ATtiny85 with 8MHz internal CPU clock (fuse setting)
+ *  - millis/micros() Disabled
+ *  - B.O.D. disabled
  */
 
 #include <stdint.h>
