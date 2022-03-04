@@ -125,8 +125,8 @@ void timer_setup()
    * set PCKE */
   PLLCSR |= (1 << PLLE);
 
-  while ((PLLCSR & PLOCK) != 0) {
-    _NOP();
+  while ((PLLCSR & (1 << PLOCK)) == 0) {
+    // wait here until the PLOCK bit goes high
   }
   PLLCSR |= (1 << PCKE);
 }
