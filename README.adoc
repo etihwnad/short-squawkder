@@ -4,7 +4,7 @@ Resistance to frequency device for tracing short-circuits or low resistance trac
 
 Design document currently lives at:
 
-https://agnd.net/valpo/322/shortsquawker-1.html
+https://agnd.net/valpo/422/shortsquawker-1.html
 
 
 // vim: tw=0
